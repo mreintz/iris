@@ -189,7 +189,7 @@ def loadData():
     }
 
     method = 'POST'
-    
+
     if isHN():
         proxy_handler = urllib2.ProxyHandler({'http': 'www-proxy.helsenord.no:8080'})
         opener = urllib2.build_opener(proxy_handler)
@@ -222,6 +222,9 @@ def loadData():
             tree.write('iris_download.xml')
         except urllib2.HTTPError:
             print "Ikke tilgang til nett. Parser lokale data."
+            tree = et.parse('iris_download.xml')
+        except IOError as e:
+            print "Brutt nettverksforbindelse. Parser lokale data."
             tree = et.parse('iris_download.xml')
     else:
         print "Parser lokale data."
@@ -288,7 +291,7 @@ class iriskalender():
 
         avfallskalender = loadData()
         today = datetime.now()
-        
+
         todaystring = datetime.strftime(today, '%Y-%m-%d')
         tomorrowstring = datetime.strftime(today+timedelta(days=1), '%Y-%m-%d')
 
@@ -312,7 +315,7 @@ class iriskalender():
             if today.month + thismonth == 12:
                 date = datetime(today.year, 12, 1)
             else:
-                date = datetime(today.year + (today.month + thismonth)/12, (today.month + thismonth)%12, 1)                
+                date = datetime(today.year + (today.month + thismonth)/12, (today.month + thismonth)%12, 1)
             outmonth = formatAvfallskalender(avfallskalender, date)
             output += '<p>'+outmonth+'<br>'
 
