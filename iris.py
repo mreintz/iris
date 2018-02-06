@@ -320,9 +320,9 @@ class iriskalender():
             output += '<p>'+outmonth+'<br>'
 
         if bottomstring == '':
-            output += u'<p><a class="notify" href="http://127.0.0.1:8099/iris/settings">Du blir varslet klokka {0} samme dag og klokka {1} dagen før.</a>'.format(str(notify_today), str(notify_tomorrow)).encode('latin-1')
+            output += u'<p><a class="notify" href="/iris/settings">Du blir varslet klokka {0} samme dag og klokka {1} dagen før.</a>'.format(str(notify_today), str(notify_tomorrow)).encode('latin-1')
         else:
-            output += u'<p><a class="notify" href="http://127.0.0.1:8099/iris/settings">{0}</a>'.format(bottomstring).encode('latin-1')
+            output += u'<p><a class="notify" href="/iris/settings">{0}</a>'.format(bottomstring).encode('latin-1')
         output += '</body></html>'
         return output
 
