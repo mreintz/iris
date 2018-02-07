@@ -12,4 +12,4 @@ RUN pip install -r /tmp/requirements.txt
 COPY iris.py iris.xml iris_download.xml /
 COPY static/kalenderstil.css static/trash.ico /static/
 
-CMD ["/usr/bin/python", "/iris.py"]
+ENTRYPOINT ["/usr/bin/python", "/iris.py"]

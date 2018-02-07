@@ -13,6 +13,22 @@ import os
 from shutil import copyfile
 import socket
 import re
+import sys
+
+global REFRESH_FROM_NET
+REFRESH_FROM_NET = False
+
+if len(sys.argv) > 1:
+    arg = sys.argv[1]
+
+    if arg.isdigit():
+        global routeID
+        routeID = arg
+        REFRESH_FROM_NET = True
+    elif arg == '--refresh':
+        REFRESH_FROM_NET = True
+else:
+    print "Run with routeID (e.g. 15847) as argument, or with --refresh to demand reload from web."
 
 urls = (
     '/iris/kalender', 'iriskalender',
@@ -158,23 +174,29 @@ def loadData():
         timestring = timestring+time.strftime('%z').replace('00', ':00')
         return timestring
 
+    global routeID
+    if not 'routeID' in globals():
+        routeID = 15847
+
     today = datetime.now()
     fromdate = datetime(today.year, today.month, 1)
     todate = datetime(today.year + (today.month+7) / 12, (today.month+7) % 12 + 1, 1)
+
+    print "Route: "+str(routeID)
 
     data = """<?xml version="1.0" encoding="utf-8"?>
         <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body>
         <GetCollectionCalendar xmlns="http://tempuri.org/">
         <username>nois</username>
         <password>nois</password>
-        <collectionpointid>15847</collectionpointid>
+        <collectionpointid>{2}</collectionpointid>
         <collectionpointidSpecified>true</collectionpointidSpecified>
         <fromDate>{0}</fromDate>
         <fromDateSpecified>true</fromDateSpecified>
         <toDate>{1}</toDate>
         <toDateSpecified>true</toDateSpecified>
         </GetCollectionCalendar>
-        </soap:Body></soap:Envelope>""".format(formatTimeString(fromdate), formatTimeString(todate)) # 2017-04-02T00:00:00+02:00, 2017-12-31T00:00:00+02:00
+        </soap:Body></soap:Envelope>""".format(formatTimeString(fromdate), formatTimeString(todate), routeID) # 2017-04-02T00:00:00+02:00, 2017-12-31T00:00:00+02:00
 
     url = 'http://77.110.220.150:82/SyncService/basic'
 
@@ -200,7 +222,8 @@ def loadData():
     lastDownloadedDate = datetime.strptime(settings()['lastDownloaded'], '%Y-%m-%d')
     diff = today - lastDownloadedDate
 
-    if diff.days > 7:
+    global REFRESH_FROM_NET
+    if diff.days > 7 or REFRESH_FROM_NET == True:
         try:
             print "Laster ned data fra webtjeneste."
             if isAndroid():
@@ -220,6 +243,8 @@ def loadData():
             except IOError:
                 print "Ingen gammel lagret fil."
             tree.write('iris_download.xml')
+
+            REFRESH_FROM_NET = False
         except urllib2.HTTPError:
             print "Ikke tilgang til nett. Parser lokale data."
             tree = et.parse('iris_download.xml')
